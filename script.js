@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.4.0, human photo deck with normal profiles and mom traps. */
+/* DON'T LIKE YOUR MOM — v0.4.5, adjusted direct-vs-background mom trap ratios. */
 (() => {
   'use strict';
 
@@ -22,9 +22,9 @@
   const DURATION = 45_000;
   const LEVELS = [
     { at: 0, title: '先認清媽媽本人', momChance: 0.15, hiddenChance: 0 },
-    { at: 5, title: '媽媽開始亂入背景', momChance: 0.24, hiddenChance: .65 },
-    { at: 12, title: '媽媽藏在人群裡', momChance: 0.32, hiddenChance: .88 },
-    { at: 22, title: '眼尖地獄', momChance: 0.4, hiddenChance: .94 }
+    { at: 5, title: '媽媽開始亂入背景', momChance: 0.24, hiddenChance: .50 },
+    { at: 12, title: '媽媽藏在人群裡', momChance: 0.32, hiddenChance: .60 },
+    { at: 22, title: '眼尖地獄', momChance: 0.4, hiddenChance: .65 }
   ];
   const NAMES = [
     'Jessie','Alex','Yuki','Ryan','Mia','Leo','Ariel','Kevin','Nina','Evan',
