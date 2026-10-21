@@ -108,6 +108,11 @@
     img.alt = `${person.name} 的真人風格交友照片`;
     // Keep the complete MOM trap visible; normal portraits can fill the card.
     img.style.objectFit = person.isMom ? 'contain' : 'cover';
+    // normal_19 has hair close to the top of the source image. Keep the full
+    // head in frame when cover-cropping this card (front AND decoded preview).
+    if (person.image.endsWith('/normal_19.webp')) {
+      img.style.objectPosition = 'center top';
+    }
     const entry = { person, img, ready: false, failed: false, promise: null };
     img.src = person.image;
     // decode() resolves only once the complete image can be painted.
