@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.4.7, 65-photo deck and corrected mom face markers. */
+/* DON'T LIKE YOUR MOM — v0.4.8, 65-photo deck and triple-size background mom markers. */
 (() => {
   'use strict';
 
@@ -412,11 +412,21 @@
       ui.evidenceSpot.style.width = '';
       ui.evidenceSpot.style.height = '';
       if (culprit.spot) {
+        const isBackgroundMom = culprit.trapType !== 'direct';
+        // v0.4.8: show a broad area rather than trying to circle an exact face.
+        // A background MOM marker is THREE TIMES its original diameter.
+        // Nudge only markers close to the image edge so the larger circle stays visible.
+        const originalSize = Number(culprit.spot.size) || 16;
+        const markerSize = isBackgroundMom ? Math.min(90, originalSize * 3) : originalSize;
+        const originalX = Number(culprit.spot.x) || 50;
+        const markerX = isBackgroundMom
+          ? Math.max(markerSize / 2, Math.min(100 - markerSize / 2, originalX))
+          : originalX;
         ui.evidenceSpot.classList.remove('hidden');
-        ui.evidenceSpot.classList.add(culprit.trapType === 'direct' ? 'spot-direct' : 'spot-small');
-        ui.evidenceSpot.style.left = culprit.spot.x + '%';
+        ui.evidenceSpot.classList.add(isBackgroundMom ? 'spot-small' : 'spot-direct');
+        ui.evidenceSpot.style.left = markerX + '%';
         ui.evidenceSpot.style.top = culprit.spot.y + '%';
-        ui.evidenceSpot.style.width = (culprit.spot.size || 16) + '%';
+        ui.evidenceSpot.style.width = markerSize + '%';
         ui.evidenceSpot.style.height = 'auto';
       }
     }
