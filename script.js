@@ -19,7 +19,7 @@
     evidenceSpot: $('evidenceSpot'), evidenceIdentity: $('evidenceIdentity'),
     evidenceReason: $('evidenceReason'), recordMessage: $('recordMessage')
   };
-  const DURATION = 30_000;
+  const DURATION = 45_000;
   const LEVELS = [
     { at: 0, title: '先認清媽媽本人', momChance: 0.15, hiddenChance: 0 },
     { at: 5, title: '媽媽開始亂入背景', momChance: 0.24, hiddenChance: .65 },
@@ -309,7 +309,7 @@
     ui.timer.classList.remove('danger');
     startAt = performance.now();
     endAt = startAt + DURATION;
-    ui.timer.textContent = '30.0';
+    ui.timer.textContent = (DURATION / 1000).toFixed(1);
     ui.timerFill.style.width = '100%';
     syncHUD();
     showScreen('game');
@@ -471,7 +471,7 @@
     if (!lastOutcome) return;
     const message = lastOutcome.likedMom
       ? `💔 DON'T LIKE YOUR MOM！我在 ${(lastOutcome.elapsed / 1000).toFixed(1)} 秒內成功 LIKE ${lastOutcome.score} 人，結果還是誤滑到媽媽了！你敢挑戰嗎？`
-      : `🏆 DON'T LIKE YOUR MOM！我在 30 秒內成功 LIKE ${lastOutcome.score} 位交友對象！你能破我的紀錄嗎？`;
+      : `🏆 DON'T LIKE YOUR MOM！我在 45 秒內成功 LIKE ${lastOutcome.score} 位交友對象！你能破我的紀錄嗎？`;
     const text = message + '\n' + window.location.href.split('#')[0];
     if (navigator.share) {
       try { await navigator.share({ title: "DON'T LIKE YOUR MOM", text }); return; }
