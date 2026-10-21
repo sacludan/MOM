@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121024">
+  <meta name="description" content="30 秒挑戰：左滑避開媽媽，右滑 LIKE 一般交友對象！">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta property="og:title" content="DON'T LIKE YOUR MOM 💔">
+  <meta property="og:description" content="真人照片版：30 秒內 LIKE 最多人，千萬別滑到媽媽！">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./style.css?v=0.4">
+  <title>DON'T LIKE YOUR MOM — 30 秒滑卡生存挑戰</title>
+</head>
+<body>
+  <div class="ambient ambient-a" aria-hidden="true"></div>
+  <div class="ambient ambient-b" aria-hidden="true"></div>
+  <div class="desktop-layout">
+    <aside class="desktop-intro">
+      <div class="desktop-kicker"><span class="live-dot"></span> 30-SECOND SWIPE CHALLENGE</div>
+      <h1>DON'T<br>LIKE<br><span>YOUR MOM.</span></h1>
+      <p>媽媽真的無所不在。<br>30 秒內別把媽媽滑成 LIKE。</p>
+      <div class="desktop-detail"><span>01</span> 媽媽會藏在別人的照片裡</div>
+      <div class="desktop-detail"><span>02</span> 還可能藏在鏡子與街頭人群中</div>
+      <div class="desktop-detail"><span>03</span> 右滑一般人物得分，媽媽右滑就輸</div>
+      <small>包含本次上傳的純路人照片與媽媽亂入陷阱，人物資料均為虛構。</small>
+    </aside>
+
+    <main class="app" aria-label="Don't Like Your Mom 遊戲">
+      <header class="app-header">
+        <div class="app-brand"><span class="brand-heart">♥</span><span>don't like <strong>your mom.</strong></span></div>
+        <span class="header-pill">SWIPE SURVIVAL</span>
+      </header>
+
+      <section id="welcomeScreen" class="screen screen-welcome" aria-labelledby="welcomeTitle">
+        <div class="welcome-art" aria-hidden="true">
+          <div class="welcome-decoration deco-one"></div>
+          <div class="welcome-decoration deco-two"></div>
+          <div class="welcome-portrait"><img src="./assets/profiles/mom_01.webp" alt=""></div>
+          <span class="welcome-sticker sticker-no">NOPE ✕</span>
+          <span class="welcome-sticker sticker-love">LIKE ♥</span>
+          <div class="welcome-bubble">HI, SWEETIE! 👋</div>
+        </div>
+        <div class="welcome-copy">
+          <div class="eyebrow">THE MOST AWKWARD DATING APP</div>
+          <h2 id="welcomeTitle">別把你媽<br><em>滑成喜歡。</em></h2>
+          <p>30 秒內盡量右滑 LIKE 正常人物得分！<br>看到媽媽一定要左滑 NOPE，右滑她就直接輸！</p>
+        </div>
+        <div class="rules-line"><span><b>←</b> 左滑媽媽避開</span><span><b>→</b> LIKE 正常人物 +1</span></div>
+        <button id="startButton" class="primary-button" type="button">開始滑卡 <span aria-hidden="true">➜</span></button>
+        <div class="welcome-bottom">看到媽媽一定要左滑！<strong>右滑媽媽就 GAME OVER</strong></div>
+      </section>
+
+      <section id="gameScreen" class="screen screen-game hidden" aria-label="遊戲進行中">
+        <div class="hud-top">
+          <div class="hud-timer"><span class="tiny-label">TIME LEFT</span><div class="timer-value"><span id="timerValue">30.0</span><small>S</small></div></div>
+          <div class="hud-score"><span class="tiny-label">LIKES</span><div class="score-value"><span id="scoreValue">0</span><span class="heart-small">♥</span></div></div>
+          <div class="hud-best"><span class="tiny-label">BEST</span><div id="bestValue" class="best-value">0</div></div>
+        </div>
+        <div class="timer-track"><div id="timerFill" class="timer-fill"></div></div>
+        <div class="stage-line"><div><span id="stagePill" class="stage-pill">LEVEL 1</span><strong id="stageName">一眼認出媽媽</strong></div><span id="comboChip" class="combo-chip" aria-live="polite"></span></div>
+        <div id="cardArea" class="card-area" aria-label="交友卡片">
+          <div class="stack-card stack-back" aria-hidden="true"></div>
+          <div class="stack-card stack-mid" aria-hidden="true"></div>
+          <article id="swipeCard" class="swipe-card" aria-label="當前交友卡片">
+            <div class="profile-photo">
+              <img id="profileImage" src="./assets/profiles/mom_01.webp" alt="交友照片">
+              <span id="likeStamp" class="swipe-stamp like-stamp" aria-hidden="true">LIKE ♥</span>
+              <span id="nopeStamp" class="swipe-stamp nope-stamp" aria-hidden="true">NOPE ✕</span>
+              <div class="photo-gradient" aria-hidden="true"></div>
+              <div class="profile-photo-label">✦ DISCOVER</div>
+            </div>
+            <div class="profile-details">
+              <div class="identity-line"><h3 id="profileName">Jessie <span>26</span></h3><span class="verified" title="虛構個人資料">✦</span></div>
+              <p id="profileBio">喜歡散步、咖啡與周末旅行。</p>
+              <div class="distance-row">⌖ <span id="profileCity">台北</span> <span class="dot-separator">·</span> 正在尋找緣分</div>
+            </div>
+          </article>
+        </div>
+        <div class="actions">
+          <button id="nopeButton" class="swipe-action nope-action" type="button" aria-label="左滑，不喜歡"><span>✕</span><small>NOPE</small></button>
+          <div class="action-instruction">左右滑動卡片<br>或點擊按鈕</div>
+          <button id="likeButton" class="swipe-action like-action" type="button" aria-label="右滑，喜歡"><span>♥</span><small>LIKE</small></button>
+        </div>
+        <p class="game-footnote">注意：照片任何角落有媽媽都不能 LIKE！</p>
+      </section>
+
+      <section id="resultScreen" class="screen screen-result hidden" aria-labelledby="resultTitle">
+        <div id="resultEmoji" class="result-emoji" aria-hidden="true">💔</div>
+        <div id="resultEyebrow" class="result-eyebrow">MOM ALERT</div>
+        <h2 id="resultTitle" class="result-title">YOU LIKED<br>YOUR MOM.</h2>
+        <p id="resultSubtitle" class="result-subtitle">BRO. THAT'S YOUR MOM.</p>
+        <div id="evidencePanel" class="evidence-panel hidden">
+          <div class="evidence-heading">你剛剛右滑了這張…</div>
+          <div class="evidence-photo"><img id="evidenceImage" src="./assets/profiles/mom_01.webp" alt="剛剛出錯的交友卡片"><div id="evidenceSpot" class="evidence-spot hidden" aria-hidden="true"></div></div>
+          <div id="evidenceIdentity" class="evidence-identity"></div>
+          <p id="evidenceReason" class="evidence-reason"></p>
+        </div>
+        <div class="result-stats">
+          <div><small>LIKES</small><strong id="finalScore">0</strong></div>
+          <div><small>TIME SURVIVED</small><strong id="finalTime">0.0s</strong></div>
+          <div><small>HIDDEN MOMS</small><strong id="finalAvoided">0</strong></div>
+        </div>
+        <div id="recordMessage" class="record-message hidden">★ NEW PERSONAL BEST ★</div>
+        <button id="retryButton" class="primary-button" type="button">再來一局 <span aria-hidden="true">↻</span></button>
+        <button id="shareButton" class="secondary-button" type="button">分享我的戰績 ↗</button>
+        <p class="result-notice">只有 30 秒，看看下一局能 LIKE 幾個人。</p>
+      </section>
+      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.4 · 23 NORMAL + 22 MOM</span></footer>
+    </main>
+  </div>
+  <script src="./art-data.js?v=0.4"></script>
+  <script src="./script.js?v=0.4"></script>
+</body>
+</html>
