@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.4.5, adjusted direct-vs-background mom trap ratios. */
+/* DON'T LIKE YOUR MOM — v0.4.7, 65-photo deck and corrected mom face markers. */
 (() => {
   'use strict';
 
