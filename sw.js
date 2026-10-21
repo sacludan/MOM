@@ -1,5 +1,5 @@
 /* This service worker caches the app shell and card illustrations on demand. */
-const VERSION = 'dlym-v0.1.0';
+const VERSION = 'dlym-v0.1.1';
 const SHELL = ['./', './index.html', './style.css', './script.js', './art-data.js', './manifest.webmanifest', './assets/mom.svg', './assets/icon-192.png', './assets/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -11,12 +11,24 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  const coreAsset = /\.(?:js|css|html)$/.test(url.pathname) || url.pathname.endsWith('/');
+  // App logic/styles: fetch latest when online. Illustrations: fast cache-first.
+  if (coreAsset) {
+    event.respondWith(fetch(event.request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(VERSION).then(cache => cache.put(event.request, copy)));
+      }
+      return response;
+    }).catch(() => caches.match(event.request)));
+    return;
+  }
   event.respondWith(caches.match(event.request).then(cached => {
     if (cached) return cached;
     return fetch(event.request).then(response => {
       if (response.ok && response.type === 'basic') {
         const clone = response.clone();
-        caches.open(VERSION).then(cache => cache.put(event.request, clone));
+        event.waitUntil(caches.open(VERSION).then(cache => cache.put(event.request, clone)));
       }
       return response;
     });

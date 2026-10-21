@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.1, fully static GitHub Pages game. */
+/* DON'T LIKE YOUR MOM — v0.1.1, prepared image deck / instant image swaps. */
 (() => {
   'use strict';
 
@@ -75,6 +75,89 @@
   let dragging = null;
   let momPending = false;
 
+  // Prepare/decode a small deck before the user swipes. Use the SAME decoded
+  // <img> node for the visible card, instead of changing src on the old image.
+  const DECK_AHEAD = 5;
+  let upcoming = [];
+  let preparedLevel = -1;
+  let renderSerial = 0;
+  let previewSerial = 0;
+
+  // The next card is already visible behind the active card as it flies away.
+  // Create it in JS so the update only needs three small existing files.
+  const preview = document.createElement('div');
+  preview.className = 'prepared-card';
+  preview.setAttribute('aria-hidden', 'true');
+  preview.innerHTML = '<div class="prepared-photo"></div><div class="prepared-details"><strong class="prepared-name"></strong><span>✦ DISCOVER</span></div>';
+  ui.cardArea.insertBefore(preview, ui.card);
+  const previewPhoto = preview.querySelector('.prepared-photo');
+  const previewName = preview.querySelector('.prepared-name');
+
+  function prepareEntry(person) {
+    const img = new Image();
+    img.decoding = 'async';
+    img.loading = 'eager';
+    img.alt = `${person.name} 的虛構交友人物插畫`;
+    const entry = { person, img, ready: false, failed: false, promise: null };
+    img.src = person.image;
+    // decode() resolves only once the complete image can be painted.
+    // Safari and older browsers may reject or not support it; fall back to load.
+    entry.promise = (typeof img.decode === 'function'
+      ? img.decode().catch(() => {
+          if (img.complete) {
+            if (img.naturalWidth > 0) return;
+            throw new Error(`Failed to load ${person.image}`);
+          }
+          return new Promise((resolve, reject) => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', reject, { once: true });
+          });
+        })
+      : new Promise((resolve, reject) => {
+          if (img.complete) return img.naturalWidth > 0 ? resolve() : reject(new Error(`Failed to load ${person.image}`));
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', reject, { once: true });
+        }))
+      .then(() => { entry.ready = true; return true; })
+      .catch(() => { entry.failed = true; return false; });
+    return entry;
+  }
+
+  function fillDeck() {
+    const nowLevel = level();
+    if (preparedLevel !== nowLevel) {
+      // Discard stale prepared cards on a level-up, so difficulty changes right away.
+      upcoming = [];
+      preparedLevel = nowLevel;
+    }
+    while (upcoming.length < DECK_AHEAD) {
+      const position = shown + upcoming.length + 1;
+      upcoming.push(prepareEntry(nextProfile(position)));
+    }
+  }
+
+  function takeReadyCard() {
+    fillDeck();
+    const entry = upcoming.shift();
+    shown++;
+    fillDeck();
+    return entry;
+  }
+
+  function paintPreview() {
+    const entry = upcoming[0];
+    const serial = ++previewSerial;
+    previewPhoto.replaceChildren(); // Never show the previous photo as the next one.
+    if (!entry) { previewName.textContent = ''; return; }
+    previewName.textContent = `${entry.person.name}, ${entry.person.age}`;
+    const apply = () => {
+      if (serial !== previewSerial || upcoming[0] !== entry || !active || !entry.ready) return;
+      previewPhoto.replaceChildren(entry.img); // The prepared, decoded image itself.
+    };
+    if (entry.ready) apply();
+    else entry.promise.then(apply);
+  }
+
   function readBest() {
     try { return Number(localStorage.getItem('dlym_best_v1')) || 0; }
     catch { return 0; }
@@ -115,13 +198,12 @@
     }
     return idx;
   }
-  function nextProfile() {
-    shown++;
+  function nextProfile(position) {
     const lvl = level();
     let isMom = false;
     let trapType = 'direct';
-    if (shown < firstMomAt) isMom = false;
-    else if (shown === firstMomAt) isMom = true;
+    if (position < firstMomAt) isMom = false;
+    else if (position === firstMomAt) isMom = true;
     else isMom = Math.random() < LEVELS[lvl].momChance;
 
     if (!isMom) return makeProfile(pull('normal'));
@@ -157,10 +239,25 @@
     ui.stageName.textContent = LEVELS[lvl].title;
     ui.combo.textContent = combo >= 3 ? `🔥 ${combo} COMBO` : '';
   }
-  function setCard(person) {
+  function setCard(entry) {
+    const person = entry.person;
     current = person;
-    ui.profileImage.src = person.image;
-    ui.profileImage.alt = `${person.name} 的虛構交友人物插畫`;
+    const serial = ++renderSerial;
+    // Hide the previous image BEFORE switching any visible profile information.
+    // If next is slower than expected, show a neutral background, never stale art.
+    ui.profileImage.style.visibility = 'hidden';
+    const reveal = () => {
+      if (serial !== renderSerial || !active || current !== person || !entry.ready) return;
+      const oldImage = ui.profileImage;
+      entry.img.id = 'profileImage';
+      entry.img.style.visibility = 'visible';
+      oldImage.removeAttribute('id');
+      oldImage.replaceWith(entry.img); // Atomically move already-decoded img into place.
+      ui.profileImage = entry.img;
+    };
+    if (entry.ready) reveal();
+    else entry.promise.then(reveal);
+
     ui.profileName.replaceChildren(document.createTextNode(person.name + ' '));
     const age = document.createElement('span');
     age.textContent = person.age;
@@ -184,6 +281,9 @@
     Object.keys(bags).forEach(key => delete bags[key]);
     score = 0; avoided = 0; skipped = 0; combo = 0; shown = 0;
     firstMomAt = 3 + Math.floor(Math.random() * 3);
+    upcoming = []; preparedLevel = -1;
+    ++renderSerial; ++previewSerial; // Cancel previous round's in-flight image work.
+    previewPhoto.replaceChildren();
     active = true; ended = false; locked = false; momPending = false;
     ui.share.textContent = '分享我的戰績 ↗';
     ui.timer.classList.remove('danger');
@@ -193,7 +293,8 @@
     ui.timerFill.style.width = '100%';
     syncHUD();
     showScreen('game');
-    setCard(nextProfile());
+    setCard(takeReadyCard());
+    paintPreview();
     frame = requestAnimationFrame(tick);
   }
   function tick(now) {
@@ -224,6 +325,9 @@
     if (which === 'like') { score++; combo++; }
     else if (person.isMom) { avoided++; combo++; }
     else { skipped++; combo = 0; }
+    // Level can change on this swipe; replace prepared cards for the new level.
+    fillDeck();
+    paintPreview();
     if (navigator.vibrate) navigator.vibrate(which === 'like' ? 12 : 7);
     const direction = which === 'like' ? 1 : -1;
     ui.card.classList.add('animating');
@@ -236,13 +340,15 @@
     pendingTransition = setTimeout(() => {
       pendingTransition = null;
       if (!active) return;
-      setCard(nextProfile());
+      setCard(takeReadyCard());
+      paintPreview();
       locked = false;
     }, 225);
   }
   function endGame(likedMom, culprit = null) {
     if (!active || ended) return;
     ended = true; active = false; locked = true;
+    ++renderSerial; ++previewSerial;
     if (frame) cancelAnimationFrame(frame);
     if (pendingTransition) { clearTimeout(pendingTransition); pendingTransition = null; }
     const elapsed = Math.min(DURATION, performance.now() - startAt);
@@ -360,6 +466,7 @@
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.1.1 · WEB';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
