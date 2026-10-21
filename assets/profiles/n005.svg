@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="600" height="650">
+    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7b9bd"/><stop offset="1" stop-color="#c0849a"/></linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".29"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="13"/></filter></defs>
+    <rect width="600" height="650" fill="url(#bg)"/><rect x="35" y="100" width="170" height="320" rx="12" fill="#fff" opacity=".18"/>
+        <rect x="416" y="84" width="149" height="402" rx="15" fill="#fff" opacity=".15"/>
+        <circle cx="507" cy="120" r="89" fill="#fff" opacity=".15"/>
+    <path d="M 0 0 H 600 V 130 Q 310 190 0 92Z" fill="url(#light)"/>
+    <path d="M 212 252 Q 200 116 314 116 Q 430 129 415 272 L 433 482 L 188 483Z" fill="#382d33"/><path d="M 102 650 Q 126 464 250 438 L 377 438 Q 510 469 534 650Z" fill="#d69b75"/><path d="M 276 354 L 268 442 Q 314 490 364 438 L 350 358Z" fill="#dba17e"/><ellipse cx="230" cy="285" rx="13" ry="23" fill="#dba17e"/><ellipse cx="398" cy="285" rx="13" ry="23" fill="#dba17e"/><ellipse cx="314" cy="274" rx="86" ry="112" fill="#dba17e"/><path d="M 231 241 Q 242 130 324 147 Q 418 147 402 262 Q 371 170 329 186 Q 294 219 231 241Z" fill="#382d33"/><path d="M 259 279 Q 277 270 293 280 M 333 280 Q 354 270 369 279" stroke="#473d3d" stroke-width="4.5" fill="none" stroke-linecap="round"/><circle cx="278" cy="281" r="3" fill="#292937"/><circle cx="350" cy="281" r="3" fill="#292937"/><path d="M 314 280 l -5 29 l 10 4" stroke="#9b685a" stroke-width="3" opacity=".56" fill="none"/><path d="M293 336 Q314 339 337 332" stroke="#934e4a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 102 610 Q 194 500 234 451" stroke="#fff" opacity=".25" stroke-width="8" fill="none"/><rect x="0" y="0" width="600" height="650" fill="none" stroke="#ffffff" stroke-opacity=".13" stroke-width="12"/>
+    </svg>
