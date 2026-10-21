@@ -1,5 +1,5 @@
 /* This service worker caches the app shell and card illustrations on demand. */
-const VERSION = 'dlym-v0.1.1';
+const VERSION = 'dlym-v0.1.2';
 const SHELL = ['./', './index.html', './style.css', './script.js', './art-data.js', './manifest.webmanifest', './assets/mom.svg', './assets/icon-192.png', './assets/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

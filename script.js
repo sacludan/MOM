@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.1.1, prepared image deck / instant image swaps. */
+/* DON'T LIKE YOUR MOM — v0.1.2, identical front/back swipe cards. */
 (() => {
   'use strict';
 
@@ -83,15 +83,22 @@
   let renderSerial = 0;
   let previewSerial = 0;
 
-  // The next card is already visible behind the active card as it flies away.
-  // Create it in JS so the update only needs three small existing files.
-  const preview = document.createElement('div');
-  preview.className = 'prepared-card';
+  // The rear card is a real clone of the active card's COMPLETE template.
+  // They therefore share the photo aspect ratio, gradient, bio, badges,
+  // typography and spacing (including all responsive styles).
+  const preview = ui.card.cloneNode(true);
+  preview.removeAttribute('id');
+  preview.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+  preview.className = 'swipe-card prepared-card';
   preview.setAttribute('aria-hidden', 'true');
-  preview.innerHTML = '<div class="prepared-photo"></div><div class="prepared-details"><strong class="prepared-name"></strong><span>✦ DISCOVER</span></div>';
+  const previewPhoto = preview.querySelector('.profile-photo');
+  const previewName = preview.querySelector('.identity-line h3');
+  const previewBio = preview.querySelector('.profile-details p');
+  const previewCity = preview.querySelector('.distance-row span');
+  // Never use the HTML's initial profile art on the rear card.
+  previewPhoto.querySelector('img').remove();
+  let previewImg = null;
   ui.cardArea.insertBefore(preview, ui.card);
-  const previewPhoto = preview.querySelector('.prepared-photo');
-  const previewName = preview.querySelector('.prepared-name');
 
   function prepareEntry(person) {
     const img = new Image();
@@ -147,12 +154,30 @@
   function paintPreview() {
     const entry = upcoming[0];
     const serial = ++previewSerial;
-    previewPhoto.replaceChildren(); // Never show the previous photo as the next one.
-    if (!entry) { previewName.textContent = ''; return; }
-    previewName.textContent = `${entry.person.name}, ${entry.person.age}`;
+    // Clear only the photo element, NOT the photo overlay / gradients / labels.
+    // Once promoted, the prepared <img> belongs to the front card.
+    // Never delete it while clearing the rear preview.
+    if (previewImg && previewImg.parentElement === previewPhoto) previewImg.remove();
+    previewImg = null;
+    if (!entry) {
+      previewName.textContent = '';
+      previewBio.textContent = '';
+      previewCity.textContent = '';
+      return;
+    }
+    const person = entry.person;
+    previewName.replaceChildren(document.createTextNode(person.name + ' '));
+    const age = document.createElement('span');
+    age.textContent = person.age;
+    previewName.appendChild(age);
+    previewBio.textContent = person.bio;
+    previewCity.textContent = person.city;
     const apply = () => {
       if (serial !== previewSerial || upcoming[0] !== entry || !active || !entry.ready) return;
-      previewPhoto.replaceChildren(entry.img); // The prepared, decoded image itself.
+      // Move the already-decoded node directly into the *same* photo template.
+      // On the next swipe, this exact node moves to the front card.
+      previewImg = entry.img;
+      previewPhoto.insertBefore(entry.img, previewPhoto.firstChild);
     };
     if (entry.ready) apply();
     else entry.promise.then(apply);
@@ -283,7 +308,10 @@
     firstMomAt = 3 + Math.floor(Math.random() * 3);
     upcoming = []; preparedLevel = -1;
     ++renderSerial; ++previewSerial; // Cancel previous round's in-flight image work.
-    previewPhoto.replaceChildren();
+    // Once promoted, the prepared <img> belongs to the front card.
+    // Never delete it while clearing the rear preview.
+    if (previewImg && previewImg.parentElement === previewPhoto) previewImg.remove();
+    previewImg = null;
     active = true; ended = false; locked = false; momPending = false;
     ui.share.textContent = '分享我的戰績 ↗';
     ui.timer.classList.remove('danger');
@@ -466,7 +494,7 @@
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.1.1 · WEB';
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.1.2 · WEB';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
