@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.5.2: app-style viewport, home navigation; leaderboard + sound + 72-photo deck. */
+/* DON'T LIKE YOUR MOM — v0.5.2: app-style viewport, home navigation; leaderboard + sound + 99-photo deck. */
 (() => {
   'use strict';
 
@@ -551,7 +551,7 @@
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.3 · 43 NORMAL + 29 MOM';
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.5 · 70 NORMAL + 29 MOM';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
