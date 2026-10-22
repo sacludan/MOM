@@ -1,15 +1,13 @@
-DON’T LIKE YOUR MOM v0.5.5 — 新增純路人照片（只需覆蓋更新檔）
+DON’T LIKE YOUR MOM v0.5.6｜排行榜標示修正（最小更新包）
 
-新增 27 張：
-- 路人3.zip：11 張獨立照片，全數保留
-- 路人4宮格.zip：4 張 2×2 拼圖，各自切成 4 張（共 16 張）
-- 已移除拼圖中間的白色分隔線，裁切成獨立 WebP
+排行榜每名玩家的右側由「♥ 39 ✦ 9」改成兩行：
+❤️ 39 LIKE
+🛡️ 9 MOM DODGED
 
-更新後：純路人 70 張、媽媽背景亂入 17 張、媽媽獨照 12 張，合計 99 張。
-保留：45 秒、全球排行榜、音效震動、手機版面適配、媽媽出現率和圈選。
+只變更顯示標示與排行榜項目高度，分數、排名、資料庫內容都不變。
 
-解壓縮後把 index.html、script.js、art-data.js、sw.js
-以及 assets/profiles/normal_44.webp ～ normal_70.webp
-按原路徑上傳或覆蓋到 GitHub Pages 專案。
-其他原始照片不需要刪除或重新上傳。
-注意：封面前後卡會沿用既有的預載方式。
+請把 ZIP 解壓後的 index.html、style.css、leaderboard.js、sw.js
+依原本位置覆蓋進 GitHub 專案根目錄，Commit changes 即可。
+不需重新上傳照片，也不需變更 Supabase。
+
+最新版本：v0.5.5 的 70 張路人＋29 張媽媽，共 99 張素材保留。

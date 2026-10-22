@@ -119,7 +119,16 @@
       li.className = 'board-row' + (rank <= 3 ? ' top-three' : '');
       const place = document.createElement('span'); place.className = 'board-rank'; place.textContent = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : '#' + rank;
       const name = document.createElement('span'); name.className = 'board-name'; name.textContent = String(entry.player_name || '玩家');
-      const extra = document.createElement('span'); extra.className = 'board-extra'; extra.textContent = `♥ ${Number(entry.likes) || 0}　✦ ${Number(entry.hidden_avoided) || 0}`;
+      const likes = Math.max(0, Number(entry.likes) || 0);
+      const dodged = Math.max(0, Number(entry.hidden_avoided) || 0);
+      const extra = document.createElement('span'); extra.className = 'board-extra';
+      const likeText = document.createElement('span'); likeText.className = 'board-likes';
+      likeText.textContent = `❤️ ${likes} LIKE`;
+      likeText.title = `成功 LIKE ${likes} 位正常路人`;
+      const momText = document.createElement('span'); momText.className = 'board-mom-dodged';
+      momText.textContent = `🛡️ ${dodged} MOM DODGED`;
+      momText.title = `成功避開 ${dodged} 張有媽媽的照片`;
+      extra.append(likeText, momText);
       li.append(place, name, extra);
       ui.list.append(li);
     }
