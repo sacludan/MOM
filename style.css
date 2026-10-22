@@ -269,3 +269,43 @@
   .actions{height:44px}.swipe-action{height:44px;width:44px;flex-basis:44px}
   .game-footnote{font-size:8px;line-height:10px;height:10px}
 }
+
+
+/* v0.5.4 — iPhone 18 Pro / 402×874 CSS-px reference.
+   In installed iOS PWAs, 100dvh can stop ~60 CSS px above the actual display.
+   JS measures the *full physical display in CSS pixels* and exposes its
+   intended height. Fill the bottom visually, reserving ONLY the Home bar inset. */
+@media (max-width:840px){
+  html,body{
+    height:var(--dlym-display-height,100dvh)!important;
+    min-height:var(--dlym-display-height,100dvh)!important;
+    max-height:var(--dlym-display-height,100dvh)!important;
+    width:100%;overflow:hidden;overscroll-behavior:none;
+  }
+  body{top:0;left:0;right:0;bottom:auto;position:fixed}
+  .desktop-layout{
+    box-sizing:border-box;
+    height:var(--dlym-display-height,100dvh)!important;
+    min-height:0!important;max-height:none!important;
+    padding-right:0!important;padding-left:0!important;
+    padding-bottom:0!important;
+    overflow:hidden;
+  }
+  .app{height:100%!important;min-height:0!important;max-height:100%!important;
+    flex:1 1 auto;overflow:hidden;}
+  /* Reserve the Home indicator inside each screen instead of outside the App.
+     The screen itself (and its background) now extends to the bottom edge. */
+  .screen-game{padding-bottom:max(8px,env(safe-area-inset-bottom,0px))!important;}
+  .screen-welcome{padding-bottom:max(16px,env(safe-area-inset-bottom,0px))!important;}
+  .screen-result{padding-bottom:max(8px,env(safe-area-inset-bottom,0px))!important;}
+  .screen-leaderboard{padding-bottom:max(9px,env(safe-area-inset-bottom,0px))!important;}
+  .screen-welcome .welcome-art{height:clamp(170px,31%,260px);max-height:260px;min-height:120px;
+    flex:0 1 auto;}
+  .screen-welcome .welcome-portrait{max-height:95%}
+  .screen-welcome .welcome-copy{margin-top:clamp(6px,2.2vh,18px)}
+  .screen-welcome{justify-content:center}
+}
+/* On shorter phones, use the same single-screen flow without squeezing below tappable height. */
+@media(max-width:840px) and (max-height:735px){
+  .screen-welcome .welcome-art{height:clamp(92px,22%,165px)}
+}

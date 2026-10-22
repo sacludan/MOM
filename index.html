@@ -8,13 +8,48 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <script>if ((/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) && (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches)) document.documentElement.classList.add('pwa-standalone');</script>
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const installed = Boolean(navigator.standalone ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+      if (ios && installed) root.classList.add('pwa-standalone');
+      // Safari's 100dvh can exclude the entire home-indicator region and a
+      // second bottom band in standalone mode. screen.height is the panel's
+      // full height in CSS px (402×874 on the reference iPhone 18 Pro).
+      function sizeApp(){
+        if (window.innerWidth > 840) return;
+        const visible = Math.round(window.visualViewport?.height || window.innerHeight);
+        const layout = Math.round(window.innerHeight);
+        const display = Math.round(window.screen?.height || layout);
+        const keyboard = root.classList.contains('keyboard-open');
+        // A 1206×2622 capture corresponds to 402×874 CSS px. Some WebKit
+        // builds report a shorter value for BOTH vh and screen.height in PWAs.
+        const iphoneProReference = ios && installed &&
+          window.innerWidth >= 400 && window.innerWidth <= 404 &&
+          window.innerHeight > 600 && window.innerWidth < window.innerHeight ? 874 : 0;
+        const full = ios && installed && !keyboard ?
+          Math.max(visible, layout, display, iphoneProReference) :
+          (keyboard ? visible : Math.max(visible,layout));
+        root.style.setProperty('--dlym-display-height', full+'px');
+      }
+      sizeApp();
+      window.addEventListener('resize',sizeApp,{passive:true});
+      window.addEventListener('orientationchange',sizeApp,{passive:true});
+      window.visualViewport?.addEventListener('resize',sizeApp,{passive:true});
+      window.addEventListener('focusin',()=>requestAnimationFrame(sizeApp));
+      window.addEventListener('focusout',()=>requestAnimationFrame(sizeApp));
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)sizeApp()});
+    })();
+  </script>
   <meta property="og:title" content="DON'T LIKE YOUR MOM 💔">
   <meta property="og:description" content="真人照片版：45 秒內 LIKE 最多人，千萬別滑到媽媽！">
   <link rel="manifest" href="./manifest.webmanifest?v=mom-icon-v1">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192-mom-v1.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon-mom-v1.png">
-  <link rel="stylesheet" href="./style.css?v=0.5.3">
+  <link rel="stylesheet" href="./style.css?v=0.5.4">
   <title>DON'T LIKE YOUR MOM — 45 秒滑卡生存挑戰</title>
 </head>
 <body>
@@ -146,13 +181,13 @@
         <p class="board-footnote">前 100 名單局成績 · 今日榜以台灣時間計算<br>未設定雲端前不會顯示假排行榜</p>
         <button id="closeLeaderboard" class="secondary-button board-back" type="button">← 返回遊戲</button>
       </section>
-      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.5.3 · 43 NORMAL + 29 MOM</span></footer>
+      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.5.4 · 43 NORMAL + 29 MOM</span></footer>
     </main>
   </div>
   <script src="./leaderboard-config.js?v=0.5.0"></script>
   <script src="./feedback.js?v=0.5.0"></script>
   <script src="./leaderboard.js?v=0.5.0"></script>
   <script src="./art-data.js?v=0.4.9"></script>
-  <script src="./script.js?v=0.5.3"></script>
+  <script src="./script.js?v=0.5.4"></script>
 </body>
 </html>
