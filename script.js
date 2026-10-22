@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.4.8, 65-photo deck and triple-size background mom markers. */
+/* DON'T LIKE YOUR MOM — v0.5.0: leaderboards + sound + haptics, 72-photo deck. */
 (() => {
   'use strict';
 
@@ -64,6 +64,7 @@
   let avoided = 0;
   let skipped = 0;
   let combo = 0;
+  let maxCombo = 0;
   let shown = 0;
   let firstMomAt = 4;
   let current = null;
@@ -301,7 +302,10 @@
     if (pendingTransition) { clearTimeout(pendingTransition); pendingTransition = null; }
     if (frame) cancelAnimationFrame(frame);
     Object.keys(bags).forEach(key => delete bags[key]);
-    score = 0; avoided = 0; hiddenAvoided = 0; skipped = 0; combo = 0; shown = 0;
+    score = 0; avoided = 0; hiddenAvoided = 0; skipped = 0; combo = 0; maxCombo = 0; shown = 0;
+    window.DLYMFeedback?.unlock();
+    window.DLYMFeedback?.resetCombo();
+    window.DLYMLeaderboard?.startRound();
     firstMomAt = 4 + Math.floor(Math.random() * 3);
     upcoming = []; preparedLevel = -1;
     ++renderSerial; ++previewSerial; // Cancel previous round's in-flight image work.
@@ -338,6 +342,8 @@
     const person = current;
     if (which === 'like' && person.isMom) {
       momPending = true;
+      window.DLYMFeedback?.play('mom');
+      window.DLYMFeedback?.vibrate([120,60,180]);
       ui.likeStamp.style.opacity = '1';
       ui.card.classList.add('animating');
       ui.card.style.transform = 'translate3d(120%, -6px, 0) rotate(21deg)';
@@ -353,10 +359,13 @@
       avoided++; combo++;
       if (person.trapType === 'background') hiddenAvoided++;
     } else { skipped++; combo = 0; }
+    if (combo > maxCombo) maxCombo = combo;
+    window.DLYMFeedback?.play(which === 'like' ? 'like' : 'nope');
+    window.DLYMFeedback?.play('combo', combo);
     // Level can change on this swipe; replace prepared cards for the new level.
     fillDeck();
     paintPreview();
-    if (navigator.vibrate) navigator.vibrate(which === 'like' ? 12 : 7);
+    window.DLYMFeedback?.vibrate(which === 'like' ? 12 : 7);
     const direction = which === 'like' ? 1 : -1;
     ui.card.classList.add('animating');
     ui.card.classList.remove('dragging');
@@ -381,6 +390,10 @@
     if (pendingTransition) { clearTimeout(pendingTransition); pendingTransition = null; }
     const elapsed = Math.min(DURATION, performance.now() - startAt);
     const survived = !likedMom;
+    if (survived) {
+      window.DLYMFeedback?.play('win');
+      window.DLYMFeedback?.vibrate([38,25,75]);
+    }
     const isNewRecord = survived && score > best;
     if (isNewRecord) { best = score; saveBest(best); }
     ui.resultEmoji.textContent = likedMom ? '💔' : '🏆';
@@ -392,7 +405,10 @@
     ui.finalAvoided.textContent = hiddenAvoided;
     ui.recordMessage.classList.toggle('hidden', !isNewRecord);
     ui.evidencePanel.classList.toggle('hidden', !likedMom);
-    lastOutcome = { likedMom, score, avoided, elapsed };
+    lastOutcome = { likedMom, score, avoided, elapsed, maxCombo };
+    window.DLYMLeaderboard?.endRound(survived, {
+      score, avoided: hiddenAvoided, maxCombo, elapsed
+    });
     if (likedMom && culprit) {
       ui.evidenceImage.onload = null;
       ui.evidenceImage.src = culprit.image;
@@ -509,7 +525,7 @@
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.4 · 真人交友版';
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.0 · 43 NORMAL + 29 MOM';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});

@@ -12,7 +12,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=0.4">
+  <link rel="stylesheet" href="./style.css?v=0.5.0">
   <title>DON'T LIKE YOUR MOM — 45 秒滑卡生存挑戰</title>
 </head>
 <body>
@@ -32,7 +32,11 @@
     <main class="app" aria-label="Don't Like Your Mom 遊戲">
       <header class="app-header">
         <div class="app-brand"><span class="brand-heart">♥</span><span>don't like <strong>your mom.</strong></span></div>
-        <span class="header-pill">SWIPE SURVIVAL</span>
+        <div class="header-controls">
+          <button id="soundToggle" class="icon-toggle" type="button" aria-label="音效開關" aria-pressed="true">🔊</button>
+          <button id="vibrationToggle" class="icon-toggle" type="button" aria-label="震動開關" aria-pressed="true">📳</button>
+          <span class="header-pill">SWIPE SURVIVAL</span>
+        </div>
       </header>
 
       <section id="welcomeScreen" class="screen screen-welcome" aria-labelledby="welcomeTitle">
@@ -51,6 +55,7 @@
         </div>
         <div class="rules-line"><span><b>←</b> 左滑媽媽避開</span><span><b>→</b> LIKE 正常人物 +1</span></div>
         <button id="startButton" class="primary-button" type="button">開始滑卡 <span aria-hidden="true">➜</span></button>
+        <button id="openLeaderboardWelcome" class="leaderboard-link" type="button">🏆 查看全球排行榜 <span aria-hidden="true">↗</span></button>
         <div class="welcome-bottom">看到媽媽一定要左滑！<strong>右滑媽媽就 GAME OVER</strong></div>
       </section>
 
@@ -105,14 +110,40 @@
           <div><small>HIDDEN MOMS</small><strong id="finalAvoided">0</strong></div>
         </div>
         <div id="recordMessage" class="record-message hidden">★ NEW PERSONAL BEST ★</div>
+        <section id="scoreSubmitArea" class="score-submit hidden" aria-label="送出全球排行戰績">
+          <label for="leaderboardNickname">🏆 全球排行榜暱稱</label>
+          <div class="submit-row">
+            <input id="leaderboardNickname" type="text" maxlength="16" placeholder="輸入 2～16 字暱稱" autocomplete="nickname" aria-label="排行榜暱稱">
+            <button id="submitScoreBtn" type="button">送出</button>
+          </div>
+          <p id="scoreSubmitStatus" class="score-submit-status" aria-live="polite"></p>
+        </section>
         <button id="retryButton" class="primary-button" type="button">再來一局 <span aria-hidden="true">↻</span></button>
         <button id="shareButton" class="secondary-button" type="button">分享我的戰績 ↗</button>
+        <button id="openLeaderboardResult" class="leaderboard-link" type="button">🏆 查看全球排行榜 ↗</button>
         <p class="result-notice">只有 45 秒，看看下一局能 LIKE 幾個人。</p>
       </section>
-      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.4.9 · 43 NORMAL + 29 MOM</span></footer>
+      <section id="leaderboardScreen" class="screen screen-leaderboard hidden" aria-label="全球排行榜">
+        <div class="board-kicker">🏆 DON'T LIKE YOUR MOM</div>
+        <h2>全球排行榜</h2>
+        <p class="board-intro">活過完整 45 秒才能上榜。右滑媽媽直接失敗！</p>
+        <div class="board-tabs" role="group" aria-label="排行榜期間">
+          <button id="boardAllBtn" type="button" aria-pressed="true">🌍 歷史總榜</button>
+          <button id="boardTodayBtn" type="button" aria-pressed="false">📅 今日榜</button>
+          <button id="refreshLeaderboard" class="board-refresh" type="button" aria-label="重新整理排行榜">↻</button>
+        </div>
+        <p id="leaderboardStatus" class="board-status" aria-live="polite">載入中…</p>
+        <ol id="leaderboardRows" class="board-list" aria-label="排行榜成績"></ol>
+        <p class="board-footnote">前 100 名單局成績 · 今日榜以台灣時間計算<br>未設定雲端前不會顯示假排行榜</p>
+        <button id="closeLeaderboard" class="secondary-button board-back" type="button">← 返回遊戲</button>
+      </section>
+      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.5.0 · 43 NORMAL + 29 MOM</span></footer>
     </main>
   </div>
+  <script src="./leaderboard-config.js?v=0.5.0"></script>
+  <script src="./feedback.js?v=0.5.0"></script>
+  <script src="./leaderboard.js?v=0.5.0"></script>
   <script src="./art-data.js?v=0.4.9"></script>
-  <script src="./script.js?v=0.4.9"></script>
+  <script src="./script.js?v=0.5.0"></script>
 </body>
 </html>
