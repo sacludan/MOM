@@ -107,13 +107,10 @@
     img.decoding = 'async';
     img.loading = 'eager';
     img.alt = `${person.name} 的真人風格交友照片`;
-    // Keep the complete MOM trap visible; normal portraits can fill the card.
-    img.style.objectFit = person.isMom ? 'contain' : 'cover';
-    // normal_19 has hair close to the top of the source image. Keep the full
-    // head in frame when cover-cropping this card (front AND decoded preview).
-    if (person.image.endsWith('/normal_19.webp')) {
-      img.style.objectPosition = 'center top';
-    }
+    // Always preserve the *entire* photo. The card uses a softened copy of
+    // the same URL for the side-fill, not another network image file.
+    img.style.objectFit = 'contain';
+    img.style.objectPosition = 'center center';
     const entry = { person, img, ready: false, failed: false, promise: null };
     img.src = person.image;
     // decode() resolves only once the complete image can be painted.
@@ -175,6 +172,8 @@
       return;
     }
     const person = entry.person;
+    // Keep blurred backdrop and original image in lockstep on the rear card.
+    previewPhoto.style.setProperty('--portrait-background', `url("${person.image}")`);
     previewName.replaceChildren(document.createTextNode(person.name + ' '));
     const age = document.createElement('span');
     age.textContent = person.age;
@@ -266,9 +265,10 @@
     const person = entry.person;
     current = person;
     const serial = ++renderSerial;
-    // Hide the previous image BEFORE switching any visible profile information.
-    // If next is slower than expected, show a neutral background, never stale art.
+    // Hide the previous image AND previous backdrop to prevent stale-card flashes.
     ui.profileImage.style.visibility = 'hidden';
+    const photoSurface = ui.profileImage.closest('.profile-photo');
+    photoSurface?.style.setProperty('--portrait-background', 'none');
     const reveal = () => {
       if (serial !== renderSerial || !active || current !== person || !entry.ready) return;
       const oldImage = ui.profileImage;
@@ -277,6 +277,7 @@
       oldImage.removeAttribute('id');
       oldImage.replaceWith(entry.img); // Atomically move already-decoded img into place.
       ui.profileImage = entry.img;
+      photoSurface?.style.setProperty('--portrait-background', `url("${person.image}")`);
     };
     if (entry.ready) reveal();
     else entry.promise.then(reveal);
@@ -550,7 +551,7 @@
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.2 · 43 NORMAL + 29 MOM';
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.3 · 43 NORMAL + 29 MOM';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});

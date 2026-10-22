@@ -216,3 +216,56 @@
   .result-actions{gap:4px;margin-top:3px}.result-action-row button{min-height:37px}
   .result-action-secondary button{min-height:33px}.score-submit{padding:6px 8px;margin:4px 0}
 }
+
+
+/* v0.5.3 — reclaim vertical space + show complete profile portraits.
+   No more cover-cropping of the top of the head or the feet. */
+.profile-photo{isolation:isolate;--portrait-background:none;background-color:#251f34}
+.profile-photo::before{
+  content:"";position:absolute;inset:-18px;z-index:0;pointer-events:none;
+  background-image:var(--portrait-background);background-size:cover;background-position:center;
+  filter:blur(18px) brightness(.64);transform:scale(1.06);
+}
+.profile-photo img{
+  position:relative;z-index:1;object-fit:contain!important;object-position:center center!important;
+  width:100%;height:100%;
+}
+.profile-photo .photo-gradient{z-index:2;inset:58% 0 0;background:linear-gradient(transparent,rgba(20,12,30,.55))}
+.profile-photo .profile-photo-label{z-index:3}
+.profile-photo .swipe-stamp{z-index:4}
+
+@media(max-width:840px){
+  /* Grid gives the card every pixel not used by the HUD and thumb controls. */
+  .screen-game{
+    display:grid;grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto 5px auto minmax(0,1fr) 48px 12px;
+    align-content:stretch;justify-content:stretch;
+    row-gap:0;padding:3px 8px 0;
+  }
+  .hud-top{padding:0 7px 3px;gap:5px}
+  .timer-value{font-size:clamp(27px,7.8vw,34px)}
+  .score-value{font-size:clamp(27px,7.5vw,32px)}
+  .best-value{font-size:clamp(26px,7vw,31px)}
+  .timer-track{margin:0 7px}
+  .stage-line{margin:5px 3px 5px;min-height:25px}
+  .card-area{min-height:0;height:100%;padding:0 2px 6px;align-self:stretch;justify-content:stretch}
+  .swipe-card{min-height:0;height:100%;max-height:100%;}
+  .swipe-card.prepared-card{inset:0 2px 6px;height:calc(100% - 6px);max-height:calc(100% - 6px)}
+  .profile-photo,.swipe-card.prepared-card .profile-photo{min-height:0;flex:1 1 auto;height:auto;aspect-ratio:auto!important}
+  .profile-details{padding:7px 13px 8px;min-height:0}
+  .identity-line h3{font-size:20px}
+  .profile-details p{margin:3px 0;font-size:11px}
+  .distance-row{font-size:9px}
+  .actions{height:48px;min-height:0;align-self:stretch;margin:0;gap:clamp(18px,8vw,34px)}
+  .swipe-action{width:44px;height:44px;flex:0 0 44px}
+  .swipe-action>span{font-size:24px}
+  .swipe-action small{font-size:7px}
+  .action-instruction{font-size:9px;line-height:1.25}
+  .game-footnote{height:12px;margin:0;padding:0;font-size:9px;line-height:12px;align-self:start}
+}
+@media(max-width:840px) and (max-height:735px){
+  .screen-game{grid-template-rows:auto 5px auto minmax(0,1fr) 44px 10px;padding-top:1px}
+  .stage-line{margin:3px 3px 3px}
+  .actions{height:44px}.swipe-action{height:44px;width:44px;flex-basis:44px}
+  .game-footnote{font-size:8px;line-height:10px;height:10px}
+}
