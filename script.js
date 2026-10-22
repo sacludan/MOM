@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.5.7: no-repeat decks, MOM roasts, friend challenges. */
+/* DON'T LIKE YOUR MOM — v0.5.8: corrected MOM dodges in leaderboard payload; no-repeat decks, MOM roasts, friend challenges. */
 (() => {
   'use strict';
 
@@ -419,8 +419,11 @@
       } else notice.textContent = '👥 同一組照片已鎖定，點「分享好友挑戰」邀朋友 PK！';
     }
     lastOutcome = { likedMom, score, avoided, elapsed, maxCombo, mode:currentMode, seed:currentChallengeSeed };
+    // SQL verifies best_combo <= likes + mom dodges. A valid combo includes
+    // both direct MOMs and background MOMs. Send the TOTAL, not only hidden
+    // background MOMs, or a flawless round can be rejected as invalid.
     window.DLYMLeaderboard?.endRound(survived, {
-      score, avoided: hiddenAvoided, maxCombo, elapsed
+      score, avoided, maxCombo, elapsed
     });
     if (likedMom && culprit) {
       const evidenceFrame = ui.evidenceImage.parentElement;
