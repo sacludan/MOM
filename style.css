@@ -420,3 +420,10 @@
     min-height:84px;
   }
 }
+
+/* v0.7.0: keep three welcome actions on one compact line. */
+.welcome-extra-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.welcome-extra-actions button{white-space:normal;line-height:1.25;font-size:clamp(10px,2.85vw,13px);padding:10px 3px}
+.community-submit-button{background:#ffffff0d;border:1px solid #fca7c471;border-radius:14px;color:#ffe4ed;font-weight:900}
+@media(max-width:840px){.welcome-extra-actions button{padding:8px 3px;min-height:39px}}
+@media(max-width:355px){.welcome-extra-actions{gap:4px}.welcome-extra-actions button{font-size:10px;padding:6px 2px}}
