@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.5.2: app-style viewport, home navigation; leaderboard + sound + 99-photo deck. */
+/* DON'T LIKE YOUR MOM — v0.5.7: no-repeat decks, MOM roasts, friend challenges. */
 (() => {
   'use strict';
 
@@ -66,14 +66,31 @@
   let combo = 0;
   let maxCombo = 0;
   let shown = 0;
-  let firstMomAt = 4;
+  const ENGINE = window.DLYMDeckEngine;
+  let roundDeck = null;
+  let currentMode = 'free';
+  let currentChallengeSeed = null;
+  let currentFriendTarget = null;
+  let incomingInvite = ENGINE?.parseInvite(ART) || null;
+  const inviteInfo = $('challengeInviteInfo');
+  const friendBtn = $('friendChallengeButton');
+  const notice = $('resultNotice');
+  const MOM_ROASTS = [
+    '寶貝，你是在找對象還是在找媽媽？','我已經截圖傳給你爸了。',
+    '我是你媽耶！眼鏡要不要換一副？','回家洗碗，順便反省一下。',
+    '你連媽媽都認不出來喔？','你小時候我可沒認錯過你！',
+    '這個讚我會記一輩子。','還敢說你眼力很好？',
+    '下次滑慢點，媽媽很傷心。','你的交友眼光，媽媽很擔心。',
+    '我只是路過也能被你滑到？','你是不是把我設成最愛了？',
+    '媽媽不是你的配對對象！','晚餐不用回來吃了……開玩笑的。',
+    '這都認不出來，罰你拖地！','我跟你爸都看到囉。'
+  ];
   let current = null;
   let endAt = 0;
   let startAt = 0;
   let frame = null;
   let pendingTransition = null;
   let lastOutcome = null;
-  const bags = {};
   let dragging = null;
   let momPending = false;
 
@@ -138,7 +155,7 @@
 
   function fillDeck() {
     const nowLevel = level();
-    if (preparedLevel !== nowLevel) {
+    if (currentMode !== 'challenge' && preparedLevel !== nowLevel) {
       // Discard stale prepared cards on a level-up, so difficulty changes right away.
       upcoming = [];
       preparedLevel = nowLevel;
@@ -198,18 +215,6 @@
   function saveBest(value) {
     try { localStorage.setItem('dlym_best_v04_likes', String(value)); } catch { /* private browsing */ }
   }
-  function random(array) { return array[Math.floor(Math.random() * array.length)]; }
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
-  function pull(type) {
-    if (!bags[type] || !bags[type].length) bags[type] = shuffle(ART[type].slice());
-    return bags[type].pop();
-  }
   function makeProfile(art) {
     const idx = ((art.persona || 1) - 1) % 64;
     return {
@@ -225,6 +230,7 @@
     };
   }
   function level() {
+    if (currentMode === 'challenge' && roundDeck) return roundDeck.stageForCard(Math.max(1,shown));
     let idx = 0;
     for (let i = LEVELS.length - 1; i >= 0; i--) {
       if (score >= LEVELS[i].at) { idx = i; break; }
@@ -232,21 +238,14 @@
     return idx;
   }
   function nextProfile(position) {
-    // Normal cards have no MOM, and are safe to LIKE. Every trap visibly contains
-    // the same fictitious MOM. Establish the face once at the beginning, then hide her.
-    const lvl = level();
-    const direct = () => {
-      const art = pull('direct');
-      return { image: `./assets/profiles/${art.file}`, name: 'MOM', age: 56,
-        bio: '寶貝，媽媽看見你囉。', city: '就在你家附近',
-        isMom: true, trapType: 'direct', spot: art.spot, reason: art.reason };
+    const {art,type} = roundDeck.next(position, level());
+    if (type === 'normal') return makeProfile(art);
+    if (type === 'background') return {
+      ...makeProfile(art), isMom: true, trapType: 'background', spot: art.spot, reason: art.reason
     };
-    if (position < firstMomAt) return makeProfile(pull('normal'));
-    if (position === firstMomAt) return direct();
-    if (Math.random() >= LEVELS[lvl].momChance) return makeProfile(pull('normal'));
-    if (Math.random() > LEVELS[lvl].hiddenChance) return direct();
-    const art = pull('background');
-    return { ...makeProfile(art), isMom: true, trapType: 'background', spot: art.spot, reason: art.reason };
+    return { image: `./assets/profiles/${art.file}`, name: 'MOM', age: 56,
+      bio: '寶貝，媽媽看見你囉。', city: '就在你家附近',
+      isMom: true, trapType: 'direct', spot: art.spot, reason: art.reason };
   }
 
   function showScreen(name) {
@@ -257,7 +256,7 @@
     ui.score.textContent = score;
     ui.best.textContent = best;
     const lvl = level();
-    ui.stagePill.textContent = `LEVEL ${lvl + 1}`;
+    ui.stagePill.textContent = currentMode === 'challenge' ? `DUEL ${lvl + 1}` : `LEVEL ${lvl + 1}`;
     ui.stageName.textContent = LEVELS[lvl].title;
     ui.combo.textContent = combo >= 3 ? `🔥 ${combo} COMBO` : '';
   }
@@ -299,15 +298,18 @@
     ui.nopeStamp.style.opacity = '0';
     dragging = null;
   }
-  function startGame() {
+  function startGame(mode='free', seed=null, friendTarget=null) {
+    if (!ENGINE) { alert('照片抽牌功能未載入，請確認 deck-engine.js 已上傳。'); return; }
+    currentMode = mode;
+    currentChallengeSeed = mode === 'challenge' ? (seed || ENGINE.newSeed()) : null;
+    currentFriendTarget = mode === 'challenge' ? friendTarget : null;
+    roundDeck = ENGINE.create(ART, {mode,seed:currentChallengeSeed});
     if (pendingTransition) { clearTimeout(pendingTransition); pendingTransition = null; }
     if (frame) cancelAnimationFrame(frame);
-    Object.keys(bags).forEach(key => delete bags[key]);
     score = 0; avoided = 0; hiddenAvoided = 0; skipped = 0; combo = 0; maxCombo = 0; shown = 0;
     window.DLYMFeedback?.unlock();
     window.DLYMFeedback?.resetCombo();
     window.DLYMLeaderboard?.startRound();
-    firstMomAt = 4 + Math.floor(Math.random() * 3);
     upcoming = []; preparedLevel = -1;
     ++renderSerial; ++previewSerial; // Cancel previous round's in-flight image work.
     // Once promoted, the prepared <img> belongs to the front card.
@@ -315,7 +317,7 @@
     if (previewImg && previewImg.parentElement === previewPhoto) previewImg.remove();
     previewImg = null;
     active = true; ended = false; locked = false; momPending = false;
-    ui.share.textContent = '分享戰績 ↗';
+    ui.share.textContent = mode === 'challenge' ? '👥 分享好友挑戰 ↗' : '分享戰績 ↗';
     ui.timer.classList.remove('danger');
     startAt = performance.now();
     endAt = startAt + DURATION;
@@ -406,7 +408,17 @@
     ui.finalAvoided.textContent = hiddenAvoided;
     ui.recordMessage.classList.toggle('hidden', !isNewRecord);
     ui.evidencePanel.classList.toggle('hidden', !likedMom);
-    lastOutcome = { likedMom, score, avoided, elapsed, maxCombo };
+    const roast = MOM_ROASTS[Math.floor(Math.random() * MOM_ROASTS.length)];
+    notice.textContent = likedMom ? `👩 媽媽：「${roast}」` : '只有 45 秒，看看下一局能 LIKE 幾個人。';
+    if (currentMode === 'challenge') {
+      if (currentFriendTarget && currentFriendTarget.target != null) {
+        const friend = currentFriendTarget;
+        const won = (survived && !friend.survived) || (survived === friend.survived && score > friend.target);
+        const tie = survived === friend.survived && score === friend.target;
+        notice.textContent = `${won ? '🏆 你贏了！' : tie ? '🤝 平手！' : '🎯 再挑戰！'} 你 ${score} LIKE ${survived ? '（存活）' : '（失敗）'} · 朋友 ${friend.target} LIKE ${friend.survived ? '（存活）' : '（失敗）'}`;
+      } else notice.textContent = '👥 同一組照片已鎖定，點「分享好友挑戰」邀朋友 PK！';
+    }
+    lastOutcome = { likedMom, score, avoided, elapsed, maxCombo, mode:currentMode, seed:currentChallengeSeed };
     window.DLYMLeaderboard?.endRound(survived, {
       score, avoided: hiddenAvoided, maxCombo, elapsed
     });
@@ -422,7 +434,7 @@
       ui.evidenceImage.src = culprit.image;
       if (ui.evidenceImage.complete && ui.evidenceImage.naturalWidth) ui.evidenceImage.onload();
       ui.evidenceImage.alt = `${culprit.name}，剛剛沒發現的媽媽陷阱`;
-      ui.evidenceReason.textContent = '↳ ' + culprit.reason;
+      ui.evidenceReason.textContent = '↳ ' + culprit.reason + (currentMode === 'challenge' ? ` · 媽媽：「${roast}」` : '');
       ui.evidenceIdentity.replaceChildren();
       const lead = document.createTextNode(`${culprit.name}，${culprit.age} 歲`);
       const label = document.createElement('span');
@@ -497,8 +509,42 @@
 
   ui.nope.addEventListener('click', () => swipe('nope'));
   ui.like.addEventListener('click', () => swipe('like'));
-  ui.start.addEventListener('click', startGame);
-  ui.retry.addEventListener('click', startGame);
+  function refreshInvite() {
+    if (incomingInvite?.invalid) {
+      inviteInfo.textContent = incomingInvite.reason;
+      inviteInfo.classList.remove('hidden');
+      ui.start.textContent = '開始一般滑卡 ➜';
+      friendBtn.textContent = '👥 建立新挑戰';
+      return;
+    }
+    if (incomingInvite) {
+      ui.start.textContent = '接受好友挑戰 ➜';
+      friendBtn.textContent = '🎮 自由模式';
+      inviteInfo.textContent = incomingInvite.target != null
+        ? `👥 朋友的目標：${incomingInvite.target} LIKE ${incomingInvite.survived ? '（45 秒存活）' : '（誤滑媽媽）'} · 相同照片順序`
+        : '👥 你收到好友挑戰！45 秒，雙方會遇到同樣的照片順序。';
+      inviteInfo.classList.remove('hidden');
+    } else {
+      ui.start.textContent = '開始滑卡 ➜';
+      friendBtn.textContent = '👥 挑戰朋友';
+      inviteInfo.classList.add('hidden');
+    }
+  }
+  ui.start.addEventListener('click', () => {
+    if (incomingInvite && !incomingInvite.invalid) startGame('challenge',incomingInvite.seed,incomingInvite);
+    else startGame('free');
+  });
+  friendBtn.addEventListener('click', () => {
+    if (incomingInvite) {
+      incomingInvite = null;
+      const url = new URL(location.href);
+      url.searchParams.delete('duel');url.searchParams.delete('deck');url.searchParams.delete('target');url.searchParams.delete('won');
+      history.replaceState(null,'',url.toString());
+      refreshInvite();
+      startGame('free');
+    } else startGame('challenge');
+  });
+  ui.retry.addEventListener('click', () => startGame(currentMode,currentMode === 'challenge' ? currentChallengeSeed : null,currentFriendTarget));
   $('homeButton').addEventListener('click', () => {
     // No result dialog, timer, or pending swipe should continue on home.
     active = false; ended = true; locked = false; momPending = false;
@@ -529,7 +575,9 @@
     const message = lastOutcome.likedMom
       ? `💔 DON'T LIKE YOUR MOM！我在 ${(lastOutcome.elapsed / 1000).toFixed(1)} 秒內成功 LIKE ${lastOutcome.score} 人，結果還是誤滑到媽媽了！你敢挑戰嗎？`
       : `🏆 DON'T LIKE YOUR MOM！我在 45 秒內成功 LIKE ${lastOutcome.score} 位交友對象！你能破我的紀錄嗎？`;
-    const text = message + '\n' + window.location.href.split('#')[0];
+    const text = lastOutcome.mode === 'challenge'
+      ? `👥 DON'T LIKE YOUR MOM 好友同題挑戰！${lastOutcome.likedMom ? '我誤滑媽媽了' : '我活過了 45 秒'}，獲得 ${lastOutcome.score} LIKE。你能贏我嗎？\n${ENGINE.challengeUrl(ART,lastOutcome.seed,lastOutcome)}`
+      : message + '\n' + new URL(location.pathname,location.origin).toString();
     if (navigator.share) {
       try { await navigator.share({ title: "DON'T LIKE YOUR MOM", text }); return; }
       catch (err) { if (err && err.name === 'AbortError') return; }
@@ -546,12 +594,13 @@
       textarea.remove();
     }
     if (copied) {
-      ui.share.textContent = '✓ 戰績已複製';
-      setTimeout(() => { ui.share.textContent = '分享戰績 ↗'; }, 1800);
+      ui.share.textContent = '✓ 連結已複製';
+      setTimeout(() => { ui.share.textContent = lastOutcome?.mode === 'challenge' ? '👥 分享好友挑戰 ↗' : '分享戰績 ↗'; }, 1800);
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.5 · 70 NORMAL + 29 MOM';
+  refreshInvite();
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.7 · 70 NORMAL + 29 MOM';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});

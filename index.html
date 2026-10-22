@@ -49,7 +49,7 @@
   <link rel="manifest" href="./manifest.webmanifest?v=mom-icon-v1">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192-mom-v1.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon-mom-v1.png">
-  <link rel="stylesheet" href="./style.css?v=0.5.6">
+  <link rel="stylesheet" href="./style.css?v=0.5.7">
   <title>DON'T LIKE YOUR MOM — 45 秒滑卡生存挑戰</title>
 </head>
 <body>
@@ -92,8 +92,11 @@
         </div>
         <div class="rules-line"><span><b>←</b> 左滑媽媽避開</span><span><b>→</b> LIKE 正常人物 +1</span></div>
         <button id="startButton" class="primary-button" type="button">開始滑卡 <span aria-hidden="true">➜</span></button>
-        <button id="openLeaderboardWelcome" class="leaderboard-link" type="button">🏆 查看全球排行榜 <span aria-hidden="true">↗</span></button>
-        <div class="welcome-bottom">看到媽媽一定要左滑！<strong>右滑媽媽就 GAME OVER</strong></div>
+        <div class="welcome-extra-actions">
+          <button id="friendChallengeButton" class="friend-challenge-button" type="button">👥 挑戰朋友</button>
+          <button id="openLeaderboardWelcome" class="leaderboard-link" type="button">🏆 全球排行榜 ↗</button>
+        </div>
+        <div id="challengeInviteInfo" class="challenge-invite-info hidden" aria-live="polite"></div><div class="welcome-bottom">看到媽媽一定要左滑！<strong>右滑媽媽就 GAME OVER</strong></div>
       </section>
 
       <section id="gameScreen" class="screen screen-game hidden" aria-label="遊戲進行中">
@@ -165,7 +168,7 @@
             <button id="openLeaderboardResult" class="leaderboard-link" type="button">🏆 全球排行榜 ↗</button>
           </div>
         </div>
-        <p class="result-notice">只有 45 秒，看看下一局能 LIKE 幾個人。</p>
+        <p id="resultNotice" class="result-notice">只有 45 秒，看看下一局能 LIKE 幾個人。</p>
       </section>
       <section id="leaderboardScreen" class="screen screen-leaderboard hidden" aria-label="全球排行榜">
         <div class="board-kicker">🏆 DON'T LIKE YOUR MOM</div>
@@ -181,13 +184,14 @@
         <p class="board-footnote">前 100 名單局成績 · 今日榜以台灣時間計算<br>未設定雲端前不會顯示假排行榜</p>
         <button id="closeLeaderboard" class="secondary-button board-back" type="button">← 返回遊戲</button>
       </section>
-      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.5.6 · 70 NORMAL + 29 MOM</span></footer>
+      <footer class="app-footer"><span>MADE FOR CHAOTIC SWIPERS</span><span>v0.5.7 · 70 NORMAL + 29 MOM</span></footer>
     </main>
   </div>
   <script src="./leaderboard-config.js?v=0.5.0"></script>
   <script src="./feedback.js?v=0.5.0"></script>
   <script src="./leaderboard.js?v=0.5.6"></script>
   <script src="./art-data.js?v=0.5.5"></script>
-  <script src="./script.js?v=0.5.5"></script>
+  <script src="./deck-engine.js?v=0.5.7"></script>
+  <script src="./script.js?v=0.5.7"></script>
 </body>
 </html>
