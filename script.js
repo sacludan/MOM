@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.5.0: leaderboards + sound + haptics, 72-photo deck. */
+/* DON'T LIKE YOUR MOM — v0.5.2: app-style viewport, home navigation; leaderboard + sound + 72-photo deck. */
 (() => {
   'use strict';
 
@@ -252,7 +252,7 @@
 
   function showScreen(name) {
     for (const [key, element] of Object.entries(SCREENS)) element.classList.toggle('hidden', key !== name);
-    window.scrollTo(0, 0);
+    // Fullscreen shell does not scroll; each screen owns its layout.
   }
   function syncHUD() {
     ui.score.textContent = score;
@@ -314,7 +314,7 @@
     if (previewImg && previewImg.parentElement === previewPhoto) previewImg.remove();
     previewImg = null;
     active = true; ended = false; locked = false; momPending = false;
-    ui.share.textContent = '分享我的戰績 ↗';
+    ui.share.textContent = '分享戰績 ↗';
     ui.timer.classList.remove('danger');
     startAt = performance.now();
     endAt = startAt + DURATION;
@@ -410,8 +410,16 @@
       score, avoided: hiddenAvoided, maxCombo, elapsed
     });
     if (likedMom && culprit) {
-      ui.evidenceImage.onload = null;
+      const evidenceFrame = ui.evidenceImage.parentElement;
+      evidenceFrame.style.removeProperty('--evidence-aspect');
+      ui.evidenceImage.onload = () => {
+        const { naturalWidth, naturalHeight } = ui.evidenceImage;
+        if (naturalWidth > 0 && naturalHeight > 0) {
+          evidenceFrame.style.setProperty('--evidence-aspect', String(naturalWidth / naturalHeight));
+        }
+      };
       ui.evidenceImage.src = culprit.image;
+      if (ui.evidenceImage.complete && ui.evidenceImage.naturalWidth) ui.evidenceImage.onload();
       ui.evidenceImage.alt = `${culprit.name}，剛剛沒發現的媽媽陷阱`;
       ui.evidenceReason.textContent = '↳ ' + culprit.reason;
       ui.evidenceIdentity.replaceChildren();
@@ -490,6 +498,23 @@
   ui.like.addEventListener('click', () => swipe('like'));
   ui.start.addEventListener('click', startGame);
   ui.retry.addEventListener('click', startGame);
+  $('homeButton').addEventListener('click', () => {
+    // No result dialog, timer, or pending swipe should continue on home.
+    active = false; ended = true; locked = false; momPending = false;
+    if (frame) { cancelAnimationFrame(frame); frame = null; }
+    if (pendingTransition) { clearTimeout(pendingTransition); pendingTransition = null; }
+    ++renderSerial; ++previewSerial;
+    clearDrag();
+    showScreen('welcome');
+  });
+  // Stop browser double-tap gestures without affecting horizontal swipe-card dragging.
+  document.addEventListener('gesturestart', event => { if (event.cancelable) event.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturechange', event => { if (event.cancelable) event.preventDefault(); }, { passive: false });
+  const nicknameField = $('leaderboardNickname');
+  const onKeyboardFocus = () => document.documentElement.classList.add('keyboard-open');
+  const onKeyboardBlur = () => document.documentElement.classList.remove('keyboard-open');
+  nicknameField?.addEventListener('focus', onKeyboardFocus);
+  nicknameField?.addEventListener('blur', onKeyboardBlur);
   document.addEventListener('keydown', e => {
     if (!active || e.repeat) return;
     if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') { e.preventDefault(); swipe('nope'); }
@@ -521,11 +546,11 @@
     }
     if (copied) {
       ui.share.textContent = '✓ 戰績已複製';
-      setTimeout(() => { ui.share.textContent = '分享我的戰績 ↗'; }, 1800);
+      setTimeout(() => { ui.share.textContent = '分享戰績 ↗'; }, 1800);
     } else ui.share.textContent = '無法複製，請手動分享網址';
   });
   ui.best.textContent = best;
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.0 · 43 NORMAL + 29 MOM';
+  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.2 · 43 NORMAL + 29 MOM';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
