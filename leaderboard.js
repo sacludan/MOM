@@ -10,6 +10,7 @@
   let submittedGameId = -1;
   let backTo = 'welcome';
   let scope = 'all';
+  let lastPayload = null;
   const $ = id => document.getElementById(id);
   const ui = {
     screen: $('leaderboardScreen'), list: $('leaderboardRows'), status: $('leaderboardStatus'),
@@ -46,6 +47,7 @@
   }
   function startRound() {
     gameId++;
+    lastPayload = null;
     submittedGameId = -1;
     const id = gameId;
     ui.entry.classList.add('hidden');
@@ -87,14 +89,29 @@
       const ticket = await ticketPromise;
       if (id !== gameId) return;
       if (!ticket) throw new Error('本局未能取得雲端挑戰票券，無法送出。請檢查雲端設定／網路。');
-      await rpc('dlym_submit_score', {
+      // Save the precise submission payload so rejected scores are diagnosable.
+      // A survived game really finishes at 45 seconds. The visible timer is
+      // clamped to 45s and SQL expects 44–45s; send the canonical full duration.
+      const likes = Number(ui.entry.dataset.score);
+      const avoided = Number(ui.entry.dataset.avoided);
+      const combo = Number(ui.entry.dataset.combo);
+      const realElapsed = Number(ui.entry.dataset.elapsed);
+      const payload = {
         p_ticket: ticket,
         p_name: name,
-        p_likes: Number(ui.entry.dataset.score),
-        p_hidden_avoided: Number(ui.entry.dataset.avoided),
-        p_best_combo: Number(ui.entry.dataset.combo),
-        p_elapsed_ms: Math.round(Number(ui.entry.dataset.elapsed))
-      });
+        p_likes: likes,
+        p_hidden_avoided: avoided,
+        p_best_combo: combo,
+        p_elapsed_ms: 45000
+      };
+      lastPayload = {likes, avoided, combo, elapsed: realElapsed, ms:payload.p_elapsed_ms};
+      if (!Number.isInteger(likes) || likes < 0 || likes > 160 ||
+          !Number.isInteger(avoided) || avoided < 0 || avoided > 160 ||
+          !Number.isInteger(combo) || combo < 0 || combo > 160 ||
+          combo > likes + avoided || !Number.isFinite(realElapsed) || realElapsed < 44000) {
+        throw new Error('本局資料驗證未通過，請截圖下方診斷碼');
+      }
+      await rpc('dlym_submit_score', payload);
       if (id !== gameId) return;
       submittedGameId = id;
       ui.submit.dataset.sent = 'true';
@@ -102,7 +119,14 @@
       submitText('✓ 已提交全球排行榜！可以點「查看排行榜」確認。');
     } catch (err) {
       if (id !== gameId) return;
-      submitText('送出失敗：' + (err.message || '請稍後重試'));
+      const message = err.message || '請稍後重試';
+      // Do not display the private ticket UUID, publishable key or anything
+      // sensitive. Numeric diagnostics let us pinpoint SQL vs cache mismatch.
+      const p = lastPayload;
+      const diag = p ? `v0.5.9｜LIKE ${p.likes}｜媽媽 ${p.avoided}｜COMBO ${p.combo}｜實測 ${Math.round(p.elapsed)}ms｜送出 ${p.ms}ms` : 'v0.5.9｜尚無送榜數據';
+      const hint = /Invalid score submission/i.test(message)
+        ? '（資料庫拒絕，請截圖診斷資料；若是舊 SQL 規則需在 Supabase 修正）' : '';
+      submitText(`送出失敗：${message}${hint}\n${diag}`);
       ui.submit.disabled = false;
     }
   }

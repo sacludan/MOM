@@ -1,17 +1,20 @@
-DON’T LIKE YOUR MOM v0.5.8 — 全球排行榜成績提交修正（僅更新檔）
+DON'T LIKE YOUR MOM v0.5.9 — 上榜診斷與顯示版本（只需更新檔）
 
-問題：原遊戲 COMBO 會計入「成功左滑媽媽獨照」與「背景亂入媽媽」，但提交排行榜時卻只送出背景媽媽數。
-Supabase 原本的安全驗證會檢查 best_combo <= likes + mom_dodged；若這局也躲過媽媽獨照，就可能回報 Invalid score submission。
+已確認線上 GitHub 專案的 JavaScript 是 v0.5.8，但之前的首頁版本顯示被 CSS 隱藏，舊程式也曾錯寫 v0.5.7，無法從玩家手機判斷實際版本。
 
-修正：提交給 Supabase 的 p_hidden_avoided 欄位，改傳「全部成功避開的媽媽數量」（包含媽媽獨照與背景媽媽）。
-這也符合現有排行榜標籤「MOM DODGED」。遊戲結算畫面的 HIDDEN MOMS 仍維持顯示背景亂入媽媽的數量。
-不用修改 Supabase SQL 或公開金鑰。原本已上傳的歷史成績不會回溯改數字。
+本版：
+- 頂端品牌下顯示由「真正執行的遊戲 JS」設定的 v0.5.9 和 99 張照片，首頁和結果頁都看得到。
+- v0.5.9 HTML、JS、CSS 用新的載入網址參數，Service Worker 同步更新並主動檢查新版本。
+- 完整存活 45 秒時，送榜使用固定 45000ms（數據也保留原始計時供診斷）。
+- 送榜會事先檢查 LIKE、避開媽媽數和 COMBO 的數學關係。
+- 若雲端仍拒絕，失敗欄顯示 v0.5.9、LIKE、MOM DODGED、COMBO、原始與送榜毫秒數；請將截圖傳回，就能分析被 SQL 拒絕的原因。
+- 沒有變動現有 Supabase SQL、排行榜、99 張照片、排行榜金鑰、好友挑戰抽牌與 45 秒規則。
 
 GitHub 更新：
-1. 將 index.html、script.js、sw.js 上傳至專案根目錄，覆蓋舊檔。
-2. Commit → Push，等 GitHub Pages 更新。
-3. 朋友將遊戲從背景完全關閉後重新開啟（必要時 Safari 重新整理）；新遊戲顯示 v0.5.8 才是新版。
-4. 重新玩滿 45 秒再送出；已失敗的那局成績不會自動補傳。
+1. 解壓 ZIP，把 index.html、style.css、script.js、leaderboard.js、sw.js 五檔覆蓋到遊戲根目錄。
+2. Commit changes → 等 GitHub Pages 部署。
+3. 讓朋友先從 Safari 直接開遊戲網站測試新首頁上方是否出現 v0.5.9。舊主畫面 Web App 可完全關閉重開；若仍舊版，移除主畫面圖示後再從 Safari 加入（本機紀錄可能清除，請留意）。
+4. 確認 v0.5.9 後重新玩滿 45 秒、提交分數。
+5. 若還是 Invalid score submission，提供顯示完整診斷碼的畫面；此時最可能是已部署 Supabase 的 SQL 驗證規則與本機提供的 SQL 不同，需用 Supabase SQL Editor 查驗，不能盲目放寬反作弊。
 
-保留：99 張照片、iPhone 18 Pro 版面、45 秒、好友固定抽牌、媽媽嘲諷、音效與全球排行。
-注意：這是修正已找出的前端／SQL 欄位不一致；無法直接連上使用者的 Supabase，因此實際雲端上榜仍需上線後驗證。
+請勿把 Supabase secret 或 service_role 密鑰發給他人或上傳 GitHub。 

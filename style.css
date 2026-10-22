@@ -332,3 +332,22 @@
   .welcome-extra-actions button{min-height:35px;padding:6px 2px;margin-top:5px}
   .screen-welcome:has(.challenge-invite-info:not(.hidden)) .welcome-art{max-height:135px}
 }
+
+/* v0.5.9: show the actual loaded JS version within the permanently visible header. */
+.app-brand .brand-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.12;min-width:0}
+.app-brand .game-version-badge{display:block;margin-top:3px;font-size:10px;letter-spacing:.3px;line-height:1.05;
+  font-weight:750;color:#9be8d7;white-space:nowrap;text-align:left}
+@media(max-width:840px){
+  .app-brand{gap:7px}
+  .app-brand .game-version-badge{font-size:9px}
+  .app-brand .brand-heart{flex:0 0 27px}
+  .app-brand .brand-label{font-size:clamp(11px,3.35vw,15px)}
+}
+@media(max-width:365px){
+  .app-header{padding:0 9px}
+  .header-controls{gap:5px}
+  .app-brand .brand-label{font-size:11px}
+  .app-brand .game-version-badge{font-size:9px}
+}
+/* Diagnostic messages must wrap on iPhones rather than forcing horizontal scroll. */
+.score-submit-status{overflow-wrap:anywhere;word-break:break-word}

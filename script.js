@@ -1,4 +1,4 @@
-/* DON'T LIKE YOUR MOM — v0.5.8: corrected MOM dodges in leaderboard payload; no-repeat decks, MOM roasts, friend challenges. */
+/* DON'T LIKE YOUR MOM — v0.5.9: submission diagnostics & runtime version; corrected MOM dodges in leaderboard payload; no-repeat decks, MOM roasts, friend challenges. */
 (() => {
   'use strict';
 
@@ -603,10 +603,14 @@
   });
   ui.best.textContent = best;
   refreshInvite();
-  document.querySelector('.app-footer span:last-child').textContent = 'v0.5.7 · 70 NORMAL + 29 MOM';
+  // The badge is set from the JS that actually executed, not merely HTML.
+  const activeBuild = 'v0.5.9';
+  document.querySelector('.app-footer span:last-child').textContent = activeBuild + ' · 70 NORMAL + 29 MOM';
+  const badge = document.getElementById('gameVersionBadge');
+  if (badge) badge.textContent = activeBuild + ' · 99 張照片';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js?v=0.5.9', {updateViaCache:'none'}).then(reg => reg.update()).catch(() => {});
     });
   }
 })();
