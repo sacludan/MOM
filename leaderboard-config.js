@@ -1,5 +1,5 @@
 /* Public settings only. Publishable key is designed for websites. Never place a secret/service-role key here. */
 window.DLYM_LEADERBOARD_CONFIG = {
-  url: '', // Example: https://your-project.supabase.co
-  publishableKey: '' // Example: sb_publishable_...
+  url: 'https://mmklmcujxeciyxsxzkke.supabase.co',
+  publishableKey: 'sb_publishable_E5QSr_0Zw3wiM7YE2RwQOA_pEZIQnIn'
 };
